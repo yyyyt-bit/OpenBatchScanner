@@ -31,4 +31,5 @@ dependencies {
     implementation("androidx.exifinterface:exifinterface:1.3.7")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     implementation("org.opencv:opencv:4.9.0")
+implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0")
 }
