@@ -91,6 +91,16 @@ class MainActivity : ComponentActivity() {
     private val permission = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
         if (it) startCamera() else finish()
     }
+    private val googleScan = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { r ->
+        val pdf = com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
+            .fromActivityResultIntent(r.data)?.pdf?.uri
+        if (r.resultCode == RESULT_OK && pdf != null) lifecycleScope.launch {
+            val ok = withContext(Dispatchers.IO) { GoogleScan.savePdf(this@MainActivity, pdf) }
+            Toast.makeText(this@MainActivity,
+                if (ok != null) "PDF salvo em Downloads" else "Falha ao salvar",
+                Toast.LENGTH_LONG).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,6 +132,11 @@ class MainActivity : ComponentActivity() {
             addView(btn("Foto") { if (state != St.CAPTURING) { state = St.CAPTURING; lastSig = null; capture(lastQuad ?: floatArrayOf(0f, 0f, 1f, 0f, 1f, 1f, 0f, 1f)) } })
             addView(btn("Desfazer") { pages.removeLastOrNull()?.delete(); setStatus("Página removida") })
             addView(btn("PDF") { exportPdf() })
+            addView(btn("Google") {
+                GoogleScan.start(this@MainActivity, googleScan) { msg ->
+                    Toast.makeText(this@MainActivity, msg, Toast.LENGTH_LONG).show()
+                }
+            })
         }
         setContentView(FrameLayout(this).apply {
             setBackgroundColor(Color.BLACK)
